@@ -1912,59 +1912,7 @@ h1, h2, h3, h4, .serif-font {
   color: rgba(255, 255, 255, 0.45);
 }
 
-/* --- 20. MOBILE STICKY CALL BAR --- */
-.mobile-sticky-bar {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 999;
-  background: rgba(250, 248, 245, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-medium);
-  padding: 0.75rem 1.25rem;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
-  transform: translateY(100%);
-  transition: transform var(--transition-smooth);
-}
 
-.mobile-sticky-bar.visible {
-  transform: translateY(0);
-}
-
-.sticky-bar-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 480px;
-  margin: 0 auto;
-  gap: 1rem;
-}
-
-.sticky-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.sticky-brand {
-  font-family: var(--font-serif);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.sticky-phone {
-  font-size: 0.82rem;
-  color: var(--accent-gold);
-  font-weight: 600;
-}
-
-.sticky-call-btn {
-  padding: 0.65rem 1.4rem;
-  font-size: 0.88rem;
-}
 
 /* --- 21. ANIMATIONS & REVEAL AU SCROLL --- */
 .reveal-on-scroll {
@@ -2230,13 +2178,4 @@ h1, h2, h3, h4, .serif-font {
     text-align: center;
   }
 
-  /* Barre fixe mobile activée */
-  .mobile-sticky-bar {
-    display: block;
-  }
-
-  /* Espace en bas pour ne pas cacher le contenu */
-  body {
-    padding-bottom: 64px;
-  }
 }

@@ -101,21 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   window.addEventListener('scroll', updateActiveNavLink, { passive: true });
 
-  // --- 5. MOBILE STICKY CALL BAR (Apparition après le Hero) ---
-  const mobileStickyBar = document.getElementById('mobile-sticky-bar');
-  const heroSection = document.getElementById('hero');
-
-  const handleStickyBarVisibility = () => {
-    if (!mobileStickyBar || !heroSection) return;
-    const heroHeight = heroSection.offsetHeight;
-    if (window.scrollY > heroHeight * 0.6) {
-      mobileStickyBar.classList.add('visible');
-    } else {
-      mobileStickyBar.classList.remove('visible');
-    }
-  };
-  window.addEventListener('scroll', handleStickyBarVisibility, { passive: true });
-  handleStickyBarVisibility();
 
   // --- 6. FILTRAGE DE LA GALERIE MASONRY (DÉSACTIVÉ - TOUTES LES PHOTOS VISIBLES) ---
   const filterBtns = document.querySelectorAll('.filter-btn');
