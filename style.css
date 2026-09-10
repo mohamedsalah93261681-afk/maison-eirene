@@ -349,15 +349,17 @@ h1, h2, h3, h4, .serif-font {
 .desktop-nav .nav-list {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: clamp(0.7rem, 1.25vw, 1.6rem);
 }
 
 .nav-link {
   position: relative;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.92);
   padding: 0.5rem 0;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
   transition: color var(--transition-fast);
 }
 
@@ -1992,16 +1994,37 @@ h1, h2, h3, h4, .serif-font {
   }
 }
 
-/* TABLETTE (768px - 1023px) */
-@media (max-width: 992px) {
-  :root {
-    --container-pad: 1.5rem;
+/* LAPTOP INTERMÉDIAIRE (1061px - 1240px) */
+@media (max-width: 1240px) and (min-width: 1061px) {
+  .desktop-nav .nav-list {
+    gap: 0.75rem;
   }
+  .nav-link {
+    font-size: 0.83rem;
+  }
+  .btn-call-nav {
+    padding: 0.55rem 1.05rem;
+    font-size: 0.82rem;
+  }
+  .logo-title {
+    font-size: 1.42rem;
+  }
+}
+
+/* TABLETTE & ÉCRANS COMPACTS (<= 1060px) */
+@media (max-width: 1060px) {
   .desktop-nav {
     display: none;
   }
   .hamburger-btn {
     display: flex;
+  }
+}
+
+/* TABLETTE (768px - 992px) */
+@media (max-width: 992px) {
+  :root {
+    --container-pad: 1.5rem;
   }
   .editorial-grid-maison {
     grid-template-columns: 1fr;
