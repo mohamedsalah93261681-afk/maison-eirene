@@ -993,6 +993,31 @@ h1, h2, h3, h4, .serif-font {
   color: var(--text-secondary);
 }
 
+/* --- 10b. SECTION DISPONIBILITÉS --- */
+.section-disponibilites {
+  padding: 6rem 0 7rem;
+  background-color: var(--bg-secondary);
+}
+
+.calendar-container {
+  max-width: 960px;
+  height: 612px;
+  margin: 0 auto;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-medium);
+  border-radius: 14px;
+  box-shadow: var(--shadow-subtle);
+  overflow: hidden;
+  position: relative;
+}
+
+.calendar-container iframe {
+  display: block;
+  width: 100%;
+  height: 642px;
+  border: none;
+}
+
 /* --- 11. SECTION ESPACES (AUCUNE IMAGE) --- */
 .section-espaces {
   padding: 7rem 0 8rem;
@@ -2075,6 +2100,7 @@ h1, h2, h3, h4, .serif-font {
   .section-intro,
   .section-la-maison,
   .section-hebergements,
+  .section-disponibilites,
   .section-espaces,
   .section-restaurant,
   .section-galerie,
@@ -2157,6 +2183,14 @@ h1, h2, h3, h4, .serif-font {
   .contact-cards-wrap .contact-card {
     max-width: 100%;
     padding: 2.25rem 1.25rem;
+  }
+
+  .calendar-container {
+    height: 485px;
+  }
+
+  .calendar-container iframe {
+    height: 515px;
   }
 
   .cta-final-box {
