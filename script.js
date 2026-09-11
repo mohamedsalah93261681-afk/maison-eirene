@@ -254,35 +254,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- 9. SYNCHRONISATION AUTOMATIQUE DU CALENDRIER (PC & MOBILE) ---
   const calIframe = document.querySelector('.calendar-container iframe');
-  const calendarContainer = document.querySelector('.calendar-container');
 
   if (calIframe) {
     const rawSrc = calIframe.getAttribute('src') || '';
     const cleanBaseSrc = rawSrc.split('&_t=')[0];
     let lastRefreshTime = Date.now();
-    let isBrowsingFutureMonth = false;
+    let userInteractingWithIframe = false;
+    let lastInteractionTime = 0;
 
     const refreshCalendar = () => {
       calIframe.src = cleanBaseSrc + '&_t=' + Date.now();
       lastRefreshTime = Date.now();
     };
 
-    // Détection si l'utilisateur explore manuellement le calendrier
-    if (calendarContainer) {
-      calendarContainer.addEventListener('touchstart', () => {
-        isBrowsingFutureMonth = true;
-      }, { passive: true });
-      calendarContainer.addEventListener('mousedown', () => {
-        isBrowsingFutureMonth = true;
-      });
-    }
+    // Détection précise si l'utilisateur clique/interagit avec le calendrier (ex: navigation vers un autre mois)
+    // Ne bloque PAS le simple défilement tactile (scroll) de la page sur mobile
+    window.addEventListener('blur', () => {
+      if (document.activeElement === calIframe) {
+        userInteractingWithIframe = true;
+        lastInteractionTime = Date.now();
+      }
+    });
 
-    // 1. RECHARGE RAPIDE AU RETOUR SUR L'ONGLET / L'APPLICATION (PC & MOBILE)
-    // Dès que vous quittez Google Agenda et revenez sur le site, il s'actualise automatiquement
+    // 1. RECHARGE IMMÉDIATE AU RETOUR SUR LE SITE (PC & MOBILE)
+    // Dès que vous revenez sur le site après avoir ajouté un événement dans Google Agenda,
+    // le calendrier s'actualise immédiatement avec les nouvelles données.
     const handleReturn = () => {
       const elapsed = Date.now() - lastRefreshTime;
-      if (elapsed > 1500) {
-        isBrowsingFutureMonth = false;
+      if (elapsed > 1000) {
+        userInteractingWithIframe = false; // Réinitialise le verrou d'interaction au retour
         refreshCalendar();
       }
     };
@@ -299,13 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
       handleReturn();
     });
 
-    // 2. RECHARGE AUTOMATIQUE PÉRIODIQUE ULTRA-RAPIDE (toutes les 30 secondes)
-    // S'actualise en continu sans interrompre la lecture d'un autre mois
+    // 2. RECHARGE AUTOMATIQUE PÉRIODIQUE (toutes les 25 secondes)
+    // S'actualise en continu tant que l'utilisateur n'est pas en train d'explorer un autre mois
     setInterval(() => {
-      if (document.visibilityState === 'visible' && !isBrowsingFutureMonth) {
-        refreshCalendar();
+      if (document.visibilityState === 'visible') {
+        const isActivelyBrowsing = userInteractingWithIframe && (Date.now() - lastInteractionTime < 90000);
+        if (!isActivelyBrowsing) {
+          refreshCalendar();
+        }
       }
-    }, 30000);
+    }, 25000);
   }
 });
 
