@@ -252,87 +252,60 @@ document.addEventListener('DOMContentLoaded', () => {
     reveals.forEach(el => el.classList.add('is-revealed'));
   }
 
-  // --- 9. ACTUALISATION INTELLIGENTE DU CALENDRIER (AUTO-SYNC & NAVIGATION SÉCURISÉE) ---
-  const calIframe = document.getElementById('google-calendar-iframe') || document.querySelector('.calendar-container iframe');
-  const refreshBtn = document.getElementById('btn-refresh-calendar');
+  // --- 9. SYNCHRONISATION AUTOMATIQUE DU CALENDRIER (PC & MOBILE) ---
+  const calIframe = document.querySelector('.calendar-container iframe');
   const calendarContainer = document.querySelector('.calendar-container');
 
   if (calIframe) {
     const rawSrc = calIframe.getAttribute('src') || '';
     const cleanBaseSrc = rawSrc.split('&_t=')[0];
     let lastRefreshTime = Date.now();
-    let userInteractedWithCalendar = false;
+    let isBrowsingFutureMonth = false;
 
-    // Fonction d'actualisation avec horodatage anti-cache
-    const refreshCalendar = (isManual = false) => {
-      const freshUrl = cleanBaseSrc + '&_t=' + Date.now();
-      calIframe.src = freshUrl;
+    const refreshCalendar = () => {
+      calIframe.src = cleanBaseSrc + '&_t=' + Date.now();
       lastRefreshTime = Date.now();
+    };
 
-      if (isManual && refreshBtn) {
-        userInteractedWithCalendar = false;
-        refreshBtn.classList.add('is-refreshing');
-        const textSpan = refreshBtn.querySelector('span');
-        const prevText = textSpan ? textSpan.textContent : 'Actualiser les disponibilités';
-        if (textSpan) textSpan.textContent = 'Actualisation en cours...';
+    // Détection si l'utilisateur explore manuellement le calendrier
+    if (calendarContainer) {
+      calendarContainer.addEventListener('touchstart', () => {
+        isBrowsingFutureMonth = true;
+      }, { passive: true });
+      calendarContainer.addEventListener('mousedown', () => {
+        isBrowsingFutureMonth = true;
+      });
+    }
 
-        setTimeout(() => {
-          refreshBtn.classList.remove('is-refreshing');
-          if (textSpan) textSpan.textContent = 'Disponibilités à jour !';
-          setTimeout(() => {
-            if (textSpan) textSpan.textContent = prevText;
-          }, 2000);
-        }, 1000);
+    // 1. RECHARGE RAPIDE AU RETOUR SUR L'ONGLET / L'APPLICATION (PC & MOBILE)
+    // Dès que vous quittez Google Agenda et revenez sur le site, il s'actualise automatiquement
+    const handleReturn = () => {
+      const elapsed = Date.now() - lastRefreshTime;
+      if (elapsed > 3000) {
+        isBrowsingFutureMonth = false;
+        refreshCalendar();
       }
     };
 
-    // 1. DÉTECTION D'INTERACTION :
-    // Dès que le visiteur clique ou touche le calendrier (pour voir octobre, novembre...),
-    // on désactive l'actualisation automatique pour ne jamais l'interrompre !
-    if (calendarContainer) {
-      calendarContainer.addEventListener('touchstart', () => {
-        userInteractedWithCalendar = true;
-      }, { passive: true });
-      calendarContainer.addEventListener('pointerdown', () => {
-        userInteractedWithCalendar = true;
-      }, { passive: true });
-    }
-
-    window.addEventListener('blur', () => {
-      if (document.activeElement === calIframe) {
-        userInteractedWithCalendar = true;
-      }
-    });
-
-    // 2. SYNCHRONISATION RAPIDE AU RETOUR SUR L'ONGLET (comme sur Netlify)
-    // Quand vous enregistrez une réservation et revenez sur le site,
-    // le calendrier se met à jour immédiatement et automatiquement
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        const elapsed = Date.now() - lastRefreshTime;
-        if (elapsed > 180000) {
-          userInteractedWithCalendar = false;
-        }
-        if (!userInteractedWithCalendar && elapsed > 4000) {
-          refreshCalendar(false);
-        }
+        handleReturn();
       }
     });
 
-    // 3. SYNCHRONISATION EN CONTINU EN ARRIÈRE-PLAN (toutes les 45 secondes)
-    // Tant que l'utilisateur n'a pas navigué vers un autre mois
-    setInterval(() => {
-      if (document.visibilityState === 'visible' && !userInteractedWithCalendar) {
-        refreshCalendar(false);
-      }
-    }, 45000);
+    window.addEventListener('focus', handleReturn);
 
-    // 4. BOUTON D'ACTUALISATION MANUELLE
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => {
-        refreshCalendar(true);
-      });
-    }
+    window.addEventListener('pageshow', () => {
+      handleReturn();
+    });
+
+    // 2. RECHARGE AUTOMATIQUE PÉRIODIQUE (toutes les 60 secondes)
+    // S'actualise en continu comme sur Netlify, sans interrompre la lecture d'un autre mois
+    setInterval(() => {
+      if (document.visibilityState === 'visible' && !isBrowsingFutureMonth) {
+        refreshCalendar();
+      }
+    }, 60000);
   }
 });
 
