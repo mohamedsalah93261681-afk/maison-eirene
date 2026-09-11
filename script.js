@@ -8,14 +8,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
-  // --- 0. SÉCURITÉ : PURGE DE TOUT MINUTEUR INTEMPESTIF ---
-  try {
-    const highestId = window.setInterval(() => {}, 9999);
-    for (let i = 0; i <= highestId; i++) {
-      window.clearInterval(i);
-    }
-  } catch (e) {}
-
   // --- 1. GESTION DU HEADER AU SCROLL ---
   const header = document.getElementById('site-header');
   const handleHeaderScroll = () => {
@@ -260,23 +252,29 @@ document.addEventListener('DOMContentLoaded', () => {
     reveals.forEach(el => el.classList.add('is-revealed'));
   }
 
-  // --- 9. GESTION DU CALENDRIER : ANTI-CACHE MOBILE & ACTUALISATION MANUELLE ---
-  const calIframe = document.getElementById('google-calendar-iframe');
+  // --- 9. ACTUALISATION INTELLIGENTE DU CALENDRIER (AUTO-SYNC & NAVIGATION SÉCURISÉE) ---
+  const calIframe = document.getElementById('google-calendar-iframe') || document.querySelector('.calendar-container iframe');
   const refreshBtn = document.getElementById('btn-refresh-calendar');
+  const calendarContainer = document.querySelector('.calendar-container');
 
   if (calIframe) {
     const rawSrc = calIframe.getAttribute('src') || '';
     const cleanBaseSrc = rawSrc.split('&_t=')[0];
+    let lastRefreshTime = Date.now();
+    let userInteractedWithCalendar = false;
 
-    const reloadCalendarWithCacheBuster = (isManual = false) => {
+    // Fonction d'actualisation avec horodatage anti-cache
+    const refreshCalendar = (isManual = false) => {
       const freshUrl = cleanBaseSrc + '&_t=' + Date.now();
       calIframe.src = freshUrl;
+      lastRefreshTime = Date.now();
 
       if (isManual && refreshBtn) {
+        userInteractedWithCalendar = false;
         refreshBtn.classList.add('is-refreshing');
         const textSpan = refreshBtn.querySelector('span');
         const prevText = textSpan ? textSpan.textContent : 'Actualiser les disponibilités';
-        if (textSpan) textSpan.textContent = 'Actualisation...';
+        if (textSpan) textSpan.textContent = 'Actualisation en cours...';
 
         setTimeout(() => {
           refreshBtn.classList.remove('is-refreshing');
@@ -284,17 +282,55 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => {
             if (textSpan) textSpan.textContent = prevText;
           }, 2000);
-        }, 1200);
+        }, 1000);
       }
     };
 
-    // Au chargement initial uniquement : contourne le cache interne (notamment mobile)
-    reloadCalendarWithCacheBuster(false);
+    // 1. DÉTECTION D'INTERACTION :
+    // Dès que le visiteur clique ou touche le calendrier (pour voir octobre, novembre...),
+    // on désactive l'actualisation automatique pour ne jamais l'interrompre !
+    if (calendarContainer) {
+      calendarContainer.addEventListener('touchstart', () => {
+        userInteractedWithCalendar = true;
+      }, { passive: true });
+      calendarContainer.addEventListener('pointerdown', () => {
+        userInteractedWithCalendar = true;
+      }, { passive: true });
+    }
 
-    // Actualisation manuelle uniquement lors du clic utilisateur
+    window.addEventListener('blur', () => {
+      if (document.activeElement === calIframe) {
+        userInteractedWithCalendar = true;
+      }
+    });
+
+    // 2. SYNCHRONISATION RAPIDE AU RETOUR SUR L'ONGLET (comme sur Netlify)
+    // Quand vous enregistrez une réservation et revenez sur le site,
+    // le calendrier se met à jour immédiatement et automatiquement
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const elapsed = Date.now() - lastRefreshTime;
+        if (elapsed > 180000) {
+          userInteractedWithCalendar = false;
+        }
+        if (!userInteractedWithCalendar && elapsed > 4000) {
+          refreshCalendar(false);
+        }
+      }
+    });
+
+    // 3. SYNCHRONISATION EN CONTINU EN ARRIÈRE-PLAN (toutes les 45 secondes)
+    // Tant que l'utilisateur n'a pas navigué vers un autre mois
+    setInterval(() => {
+      if (document.visibilityState === 'visible' && !userInteractedWithCalendar) {
+        refreshCalendar(false);
+      }
+    }, 45000);
+
+    // 4. BOUTON D'ACTUALISATION MANUELLE
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => {
-        reloadCalendarWithCacheBuster(true);
+        refreshCalendar(true);
       });
     }
   }
