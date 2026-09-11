@@ -1020,6 +1020,18 @@ h1, h2, h3, h4, .serif-font {
   border: none;
 }
 
+/* Masque transparent partiel : bloque les clics sur les événements sans bloquer la navigation < et > en haut */
+.calendar-events-blocker {
+  position: absolute;
+  top: 52px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 52px);
+  z-index: 10;
+  background: transparent;
+  cursor: default;
+}
+
 /* --- 11. SECTION ESPACES (AUCUNE IMAGE) --- */
 .section-espaces {
   padding: 7rem 0 8rem;
