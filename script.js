@@ -8,6 +8,14 @@
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
+  // --- 0. SÉCURITÉ : PURGE DE TOUT MINUTEUR INTEMPESTIF ---
+  try {
+    const highestId = window.setInterval(() => {}, 9999);
+    for (let i = 0; i <= highestId; i++) {
+      window.clearInterval(i);
+    }
+  } catch (e) {}
+
   // --- 1. GESTION DU HEADER AU SCROLL ---
   const header = document.getElementById('site-header');
   const handleHeaderScroll = () => {
@@ -251,5 +259,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fallback si IntersectionObserver n'est pas supporté
     reveals.forEach(el => el.classList.add('is-revealed'));
   }
+
+  // --- 9. VERROUILLAGE TOTAL DE L'IFRAME DU CALENDRIER ---
+  const calIframe = document.querySelector('.calendar-container iframe');
+  if (calIframe) {
+    const lockedSrc = calIframe.getAttribute('src');
+    try {
+      Object.defineProperty(calIframe, 'src', {
+        get: () => lockedSrc,
+        set: () => lockedSrc,
+        configurable: false
+      });
+    } catch (e) {}
+  }
 });
+
 
