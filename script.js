@@ -251,39 +251,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fallback si IntersectionObserver n'est pas supporté
     reveals.forEach(el => el.classList.add('is-revealed'));
   }
-
-  // --- 9. ACTUALISATION AUTOMATIQUE DU CALENDRIER (AUTO-REFRESH) ---
-  const calIframe = document.querySelector('.calendar-container iframe');
-  if (calIframe) {
-    let lastRefreshTime = Date.now();
-
-    const refreshCalendar = () => {
-      try {
-        const url = new URL(calIframe.src);
-        url.searchParams.set('_t', Date.now().toString());
-        calIframe.src = url.toString();
-        lastRefreshTime = Date.now();
-      } catch (err) {
-        const cleanSrc = calIframe.src.split('&_t=')[0];
-        calIframe.src = cleanSrc + '&_t=' + Date.now();
-      }
-    };
-
-    // 1. Recharge automatiquement dès que vous revenez sur l'onglet du site
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        const elapsed = Date.now() - lastRefreshTime;
-        if (elapsed > 15000) {
-          refreshCalendar();
-        }
-      }
-    });
-
-    // 2. Recharge automatique en continu toutes les 60 secondes
-    setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        refreshCalendar();
-      }
-    }, 60000);
-  }
 });
+
