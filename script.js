@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dès que vous quittez Google Agenda et revenez sur le site, il s'actualise automatiquement
     const handleReturn = () => {
       const elapsed = Date.now() - lastRefreshTime;
-      if (elapsed > 3000) {
+      if (elapsed > 1500) {
         isBrowsingFutureMonth = false;
         refreshCalendar();
       }
@@ -299,13 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
       handleReturn();
     });
 
-    // 2. RECHARGE AUTOMATIQUE PÉRIODIQUE (toutes les 60 secondes)
-    // S'actualise en continu comme sur Netlify, sans interrompre la lecture d'un autre mois
+    // 2. RECHARGE AUTOMATIQUE PÉRIODIQUE ULTRA-RAPIDE (toutes les 30 secondes)
+    // S'actualise en continu sans interrompre la lecture d'un autre mois
     setInterval(() => {
       if (document.visibilityState === 'visible' && !isBrowsingFutureMonth) {
         refreshCalendar();
       }
-    }, 60000);
+    }, 30000);
   }
 });
 
