@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Feuille de style principale -->
-  <link rel="stylesheet" href="style.css?v=20260906_4">
+  <link rel="stylesheet" href="style.css?v=20260911_5">
 
   <!-- Données Structurées SEO Local (JSON-LD) -->
   <script type="application/ld+json">
@@ -437,6 +437,13 @@
         <div class="section-header-editorial text-center reveal-on-scroll">
           <span class="section-kicker">DISPONIBILITÉS</span>
           <h2 class="section-title">Calendrier</h2>
+          <p class="section-subtitle">Consultez en direct les dates disponibles et réservées pour votre séjour à Maison Eirene.</p>
+          <div class="calendar-actions">
+            <button id="btn-refresh-calendar" class="btn-calendar-refresh" type="button" aria-label="Actualiser les disponibilités">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              <span>Actualiser les disponibilités</span>
+            </button>
+          </div>
           <div class="editorial-divider center"></div>
         </div>
 
@@ -444,23 +451,12 @@
           <iframe id="google-calendar-iframe" src="https://calendar.google.com/calendar/embed?src=86620401495363e7910e49bc1c192d941731e293c939839159724fa099c1f2a1%40group.calendar.google.com&amp;ctz=Africa%2FTunis&amp;mode=MONTH&amp;showTitle=0&amp;showNav=1&amp;showDate=1&amp;showPrint=1&amp;showTabs=1&amp;showCalendars=0&amp;showTz=0" style="border: 0" width="100%" height="642" frameborder="0" scrolling="no"></iframe>
         </div>
         <script>
-          /* Verrouillage absolu du calendrier Google : bloque tout rechargement ou timer résiduel */
+          /* Purge de sécurité : suppression de tout ancien timer résiduel */
           (function() {
             try {
               var maxId = window.setInterval(function() {}, 9999);
               for (var i = 0; i <= maxId; i++) { window.clearInterval(i); }
             } catch(e) {}
-            var calEl = document.getElementById('google-calendar-iframe');
-            if (calEl) {
-              var lockedSrc = calEl.getAttribute('src');
-              try {
-                Object.defineProperty(calEl, 'src', {
-                  get: function() { return lockedSrc; },
-                  set: function() { return lockedSrc; },
-                  configurable: false
-                });
-              } catch(e) {}
-            }
           })();
         </script>
       </div>
@@ -1109,6 +1105,6 @@
 
 
   <!-- Script Vanilla JavaScript -->
-  <script src="script.js?v=20260911_4"></script>
+  <script src="script.js?v=20260911_5"></script>
 </body>
 </html>

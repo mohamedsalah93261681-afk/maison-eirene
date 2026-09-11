@@ -260,17 +260,43 @@ document.addEventListener('DOMContentLoaded', () => {
     reveals.forEach(el => el.classList.add('is-revealed'));
   }
 
-  // --- 9. VERROUILLAGE TOTAL DE L'IFRAME DU CALENDRIER ---
-  const calIframe = document.querySelector('.calendar-container iframe');
+  // --- 9. GESTION DU CALENDRIER : ANTI-CACHE MOBILE & ACTUALISATION MANUELLE ---
+  const calIframe = document.getElementById('google-calendar-iframe');
+  const refreshBtn = document.getElementById('btn-refresh-calendar');
+
   if (calIframe) {
-    const lockedSrc = calIframe.getAttribute('src');
-    try {
-      Object.defineProperty(calIframe, 'src', {
-        get: () => lockedSrc,
-        set: () => lockedSrc,
-        configurable: false
+    const rawSrc = calIframe.getAttribute('src') || '';
+    const cleanBaseSrc = rawSrc.split('&_t=')[0];
+
+    const reloadCalendarWithCacheBuster = (isManual = false) => {
+      const freshUrl = cleanBaseSrc + '&_t=' + Date.now();
+      calIframe.src = freshUrl;
+
+      if (isManual && refreshBtn) {
+        refreshBtn.classList.add('is-refreshing');
+        const textSpan = refreshBtn.querySelector('span');
+        const prevText = textSpan ? textSpan.textContent : 'Actualiser les disponibilités';
+        if (textSpan) textSpan.textContent = 'Actualisation...';
+
+        setTimeout(() => {
+          refreshBtn.classList.remove('is-refreshing');
+          if (textSpan) textSpan.textContent = 'Disponibilités à jour !';
+          setTimeout(() => {
+            if (textSpan) textSpan.textContent = prevText;
+          }, 2000);
+        }, 1200);
+      }
+    };
+
+    // Au chargement initial uniquement : contourne le cache interne (notamment mobile)
+    reloadCalendarWithCacheBuster(false);
+
+    // Actualisation manuelle uniquement lors du clic utilisateur
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        reloadCalendarWithCacheBuster(true);
       });
-    } catch (e) {}
+    }
   }
 });
 
