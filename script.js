@@ -252,23 +252,26 @@ document.addEventListener('DOMContentLoaded', () => {
     reveals.forEach(el => el.classList.add('is-revealed'));
   }
 
-  // --- 9. SYNCHRONISATION AUTOMATIQUE DU CALENDRIER (PC & MOBILE) ---
+  // --- 9. SYNCHRONISATION AUTOMATIQUE DU CALENDRIER ULTRA-RAPIDE (PC & MOBILE) ---
   const calIframe = document.querySelector('.calendar-container iframe');
+  const calendarSection = document.getElementById('disponibilites');
 
   if (calIframe) {
-    const rawSrc = calIframe.getAttribute('src') || '';
-    const cleanBaseSrc = rawSrc.split('&_t=')[0];
+    const baseUrl = "https://calendar.google.com/calendar/embed?src=86620401495363e7910e49bc1c192d941731e293c939839159724fa099c1f2a1%40group.calendar.google.com&ctz=Africa%2FTunis&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=1&showTabs=1&showCalendars=0&showTz=0";
     let lastRefreshTime = Date.now();
     let userInteractingWithIframe = false;
     let lastInteractionTime = 0;
 
-    const refreshCalendar = () => {
-      calIframe.src = cleanBaseSrc + '&_t=' + Date.now();
+    const refreshCalendar = (force = false) => {
+      const isActivelyBrowsing = userInteractingWithIframe && (Date.now() - lastInteractionTime < 60000);
+      if (isActivelyBrowsing && !force) {
+        return;
+      }
+      calIframe.src = baseUrl + '&_t=' + Date.now();
       lastRefreshTime = Date.now();
     };
 
-    // Détection précise si l'utilisateur clique/interagit avec le calendrier (ex: navigation vers un autre mois)
-    // Ne bloque PAS le simple défilement tactile (scroll) de la page sur mobile
+    // Détection précise si l'utilisateur clique/interagit à l'intérieur de l'iframe (ex: navigation vers un autre mois)
     window.addEventListener('blur', () => {
       if (document.activeElement === calIframe) {
         userInteractingWithIframe = true;
@@ -276,14 +279,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // 1. RECHARGE IMMÉDIATE AU RETOUR SUR LE SITE (PC & MOBILE)
-    // Dès que vous revenez sur le site après avoir ajouté un événement dans Google Agenda,
-    // le calendrier s'actualise immédiatement avec les nouvelles données.
+    // 1. DÉTECTION DU DÉFILEMENT VERS LE CALENDRIER (SPÉCIAL MOBILE)
+    // Dès que le visiteur fait défiler la page jusqu'au calendrier, celui-ci se synchronise immédiatement
+    if ('IntersectionObserver' in window && calendarSection) {
+      const calendarObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const elapsed = Date.now() - lastRefreshTime;
+            if (elapsed > 5000) {
+              userInteractingWithIframe = false;
+              refreshCalendar();
+            }
+          }
+        });
+      }, { threshold: 0.15 });
+      calendarObserver.observe(calendarSection);
+    }
+
+    // 2. RECHARGE IMMÉDIATE AU RETOUR SUR LE SITE (PC & MOBILE)
+    // Dès que vous quittez Google Agenda et revenez sur le site, actualisation instantanée !
     const handleReturn = () => {
       const elapsed = Date.now() - lastRefreshTime;
-      if (elapsed > 1000) {
-        userInteractingWithIframe = false; // Réinitialise le verrou d'interaction au retour
-        refreshCalendar();
+      if (elapsed > 500) {
+        userInteractingWithIframe = false;
+        refreshCalendar(true);
       }
     };
 
@@ -299,16 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
       handleReturn();
     });
 
-    // 2. RECHARGE AUTOMATIQUE PÉRIODIQUE (toutes les 25 secondes)
-    // S'actualise en continu tant que l'utilisateur n'est pas en train d'explorer un autre mois
+    // 3. RECHARGE PÉRIODIQUE ULTRA-RAPIDE (toutes les 15 secondes)
     setInterval(() => {
       if (document.visibilityState === 'visible') {
-        const isActivelyBrowsing = userInteractingWithIframe && (Date.now() - lastInteractionTime < 90000);
-        if (!isActivelyBrowsing) {
-          refreshCalendar();
-        }
+        refreshCalendar();
       }
-    }, 25000);
+    }, 15000);
   }
 });
 
